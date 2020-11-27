@@ -275,6 +275,7 @@ LSP_TYPE_VIRTUAL = 'virtual'
 LSP_TYPE_EXTERNAL = 'external'
 LSP_OPTIONS_VIRTUAL_PARENTS_KEY = 'virtual-parents'
 LSP_OPTIONS_VIRTUAL_IP_KEY = 'virtual-ip'
+LSP_TYPE_LOCALPORT = 'localport'
 
 HA_CHASSIS_GROUP_DEFAULT_NAME = 'default_ha_chassis_group'
 HA_CHASSIS_GROUP_HIGHEST_PRIORITY = 32767
@@ -282,6 +283,9 @@ HA_CHASSIS_GROUP_HIGHEST_PRIORITY = 32767
 # OVN igmp options
 MCAST_SNOOP = 'mcast_snoop'
 MCAST_FLOOD_UNREGISTERED = 'mcast_flood_unregistered'
+MCAST_QUERIER = 'mcast_querier'
+MCAST_ETH_SRC = 'mcast_eth_src'
+MCAST_IP_SRC = 'mcast_ip4_src'
 
 EXTERNAL_PORT_TYPES = (portbindings.VNIC_DIRECT,
                        portbindings.VNIC_DIRECT_PHYSICAL,

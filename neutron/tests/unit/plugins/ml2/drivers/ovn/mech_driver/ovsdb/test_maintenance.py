@@ -307,16 +307,25 @@ class TestDBInconsistenciesPeriodics(testlib_api.SqlTestCaseLight,
     def test_check_for_igmp_snoop_support(self):
         cfg.CONF.set_override('igmp_snooping_enable', True, group='OVS')
         nb_idl = self.fake_ovn_client._nb_idl
+        mcast_eth = "fa:16:3e:c4:31:a1"
+        mcast_ip = "10.0.0.210"
+        fake_lsp = fakes.FakeOvsdbRow.create_one_ovsdb_row(
+            attrs={'name': 'lsp',
+                   'type': constants.LSP_TYPE_LOCALPORT,
+                   'addresses': [' '.join([mcast_eth, mcast_ip])]})
         ls0 = fakes.FakeOvsdbRow.create_one_ovsdb_row(
             attrs={'name': 'ls0',
+                   'ports': [fake_lsp],
                    'other_config': {
                        constants.MCAST_SNOOP: 'false',
                        constants.MCAST_FLOOD_UNREGISTERED: 'false'}})
         ls1 = fakes.FakeOvsdbRow.create_one_ovsdb_row(
             attrs={'name': 'ls1',
+                   'ports': [fake_lsp],
                    'other_config': {}})
         ls2 = fakes.FakeOvsdbRow.create_one_ovsdb_row(
             attrs={'name': 'ls2',
+                   'ports': [],
                    'other_config': {
                         constants.MCAST_SNOOP: 'true',
                         constants.MCAST_FLOOD_UNREGISTERED: 'false'}})
@@ -332,11 +341,15 @@ class TestDBInconsistenciesPeriodics(testlib_api.SqlTestCaseLight,
             mock.call('Logical_Switch', 'ls0',
                       ('other_config', {
                            constants.MCAST_SNOOP: 'true',
-                           constants.MCAST_FLOOD_UNREGISTERED: 'false'})),
+                           constants.MCAST_FLOOD_UNREGISTERED: 'false',
+                           constants.MCAST_ETH_SRC: mcast_eth,
+                           constants.MCAST_IP_SRC: mcast_ip})),
             mock.call('Logical_Switch', 'ls1',
                       ('other_config', {
                            constants.MCAST_SNOOP: 'true',
-                           constants.MCAST_FLOOD_UNREGISTERED: 'false'})),
+                           constants.MCAST_FLOOD_UNREGISTERED: 'false',
+                           constants.MCAST_ETH_SRC: mcast_eth,
+                           constants.MCAST_IP_SRC: mcast_ip})),
         ]
         nb_idl.db_set.assert_has_calls(expected_calls)
 

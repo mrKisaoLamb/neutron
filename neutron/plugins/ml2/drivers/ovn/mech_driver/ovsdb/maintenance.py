@@ -555,18 +555,24 @@ class DBInconsistenciesPeriodics(SchemaAwarePeriodicsBase):
     def check_for_igmp_snoop_support(self):
         if not self.has_lock:
             return
-
+        mcast_eth, mcast_ip = '', ''
         with self._nb_idl.transaction(check_error=True) as txn:
             value = ('true' if ovn_conf.is_igmp_snooping_enabled()
                      else 'false')
             for ls in self._nb_idl.ls_list().execute(check_error=True):
                 if ls.other_config.get(ovn_const.MCAST_SNOOP, None) == value:
                     continue
+                for lsp in ls.ports:
+                    if lsp.type != ovn_const.LSP_TYPE_LOCALPORT:
+                        continue
+                    mcast_eth, mcast_ip = lsp.addresses[0].split()
                 txn.add(self._nb_idl.db_set(
                     'Logical_Switch', ls.name,
                     ('other_config', {
                         ovn_const.MCAST_SNOOP: value,
-                        ovn_const.MCAST_FLOOD_UNREGISTERED: 'false'})))
+                        ovn_const.MCAST_FLOOD_UNREGISTERED: 'false',
+                        ovn_const.MCAST_ETH_SRC: mcast_eth,
+                        ovn_const.MCAST_IP_SRC: mcast_ip})))
 
         raise periodics.NeverAgain()
 

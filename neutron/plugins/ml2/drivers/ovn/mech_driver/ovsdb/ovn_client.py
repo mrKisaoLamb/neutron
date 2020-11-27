@@ -1565,7 +1565,9 @@ class OVNClient(object):
                 lswitch_name=utils.ovn_name(network_id))
         self._transaction([cmd])
 
-    def _gen_network_parameters(self, network):
+    def _gen_network_parameters(self, network, ports=None):
+        if not ports:
+            ports = []
         params = {'external_ids': {
             ovn_const.OVN_NETWORK_NAME_EXT_ID_KEY: network['name'],
             ovn_const.OVN_NETWORK_MTU_EXT_ID_KEY: str(network['mtu']),
@@ -1579,6 +1581,14 @@ class OVNClient(object):
         params['other_config'] = {ovn_const.MCAST_SNOOP: value,
                                   ovn_const.MCAST_FLOOD_UNREGISTERED: 'false',
                                   ovn_const.VLAN_PASSTHRU: vlan_transparent}
+        for lsp in ports:
+            if lsp.type != ovn_const.LSP_TYPE_LOCALPORT:
+                continue
+            mcast_eth, mcast_ip = lsp.addresses[0].split()
+            params['other_config'].update({
+                ovn_const.MCAST_ETH_SRC: mcast_eth,
+                ovn_const.MCAST_IP_SRC: mcast_ip
+            })
         return params
 
     def create_network(self, context, network):
@@ -1662,8 +1672,8 @@ class OVNClient(object):
 
         with self._nb_idl.transaction(check_error=True) as txn:
             txn.add(check_rev_cmd)
-            lswitch_params = self._gen_network_parameters(network)
             lswitch = self._nb_idl.get_lswitch(lswitch_name)
+            lswitch_params = self._gen_network_parameters(network. lswitch.ports)
             txn.add(self._nb_idl.db_set(
                 'Logical_Switch', lswitch_name, *lswitch_params.items()))
             # Check if previous mtu is different than current one,
