@@ -265,7 +265,7 @@ class OVNClient(object):
                     const.DEVICE_OWNER_DISTRIBUTED,
                     const.DEVICE_OWNER_DHCP] and
                     not utils.is_neutron_dhcp_agent_port(port)):
-                port_type = 'localport'
+                port_type = ovn_const.LSP_TYPE_LOCALPORT
 
             capabilities = utils.get_port_capabilities(port)
             vnic_type = port.get(portbindings.VNIC_TYPE,

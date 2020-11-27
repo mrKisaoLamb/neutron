@@ -795,7 +795,7 @@ class OvsdbSbOvnIdl(sb_impl_idl.OvnSbApiIdlImpl, Backend):
         except idlutils.RowNotFound:
             return None
         cmd = self.db_find_rows('Port_Binding', ('datapath', '=', dp),
-                                ('type', '=', 'localport'))
+                                ('type', '=', ovn_const.LSP_TYPE_LOCALPORT))
         return next(iter(cmd.execute(check_error=True)), None)
 
     def get_chassis_metadata_networks(self, chassis_name):
